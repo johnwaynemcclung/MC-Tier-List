@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marvel Champions - Standalone Tier List Maker</title>
+    <style>
+        :root {
+            --bg-primary: #12141d;
+            --bg-secondary: #1a1d28;
+            --bg-card: #25293a;
+            --text-main: #f0f2f8;
+            --text-muted: #9aa1b9;
+            --accent-red: #e62429;
+            --accent-gold: #ffd700;
+            --border-color: #33384f;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            padding: 24px;
+            min-height: 100vh;
+        }
+
+        /* Header Container with Full Background Graphic */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 24px 28px;
+            border-bottom: 2px solid var(--border-color);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(90deg, rgba(18, 20, 29, 0.92) 0%, rgba(26, 29, 40, 0.85) 50%, rgba(18, 20, 29, 0.95) 100%),
+                        radial-gradient(circle at 20% 50%, rgba(230, 36, 41, 0.25) 0%, transparent 60%);
+            background-color: var(--bg-secondary);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            gap: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            z-index: 2;
+        }
+
+        .banner-art-svg {
+            height: 60px;
+            width: auto;
+            filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7));
+        }
+
+        .title-group h1 {
+            font-size: 1.7rem;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .title-group p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+
+        .controls-group {
+            display: flex;
+            gap: 10px;
+            z-index: 2;
+        }
+
+        button {
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: var(--accent-red);
+            border-color: var(--accent-red);
+            color: white;
+        }
+
+        /* Tier Board */
+        #tier-board {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 28px;
+            background-color: var(--bg-secondary);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .tier-row {
+            display: flex;
+            min-height: 95px;
+            background-color: rgba(0, 0, 0, 0.25);
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tier-header {
+            width: 200px;
+            min-width: 150px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 800;
+            font-size: 1.05rem;
+            color: #111111;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
+            padding: 8px 12px;
+            position: relative;
+            line-height: 1.2;
+        }
+
+        .tier-header-text {
+            flex-grow: 1;
+            text-align: center;
+            cursor: pointer;
+            word-wrap: break-word;
+            padding-right: 4px;
+        }
+
+        .color-picker-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            background: rgba(255,255,255,0.3);
+            border-radius: 4px;
+            border: 1px solid rgba(0,0,0,0.2);
+            transition: background 0.15s ease;
+        }
+
+        .color-picker-btn:hover {
+            background: rgba(255,255,255,0.6);
+        }
+
+        .tier-color-input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+
+        .tier-dropzone {
+            flex-grow: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px;
+            align-items: center;
+            min-height: 95px;
+        }
+
+        .tier-actions {
+            width: 35px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .tier-actions button {
+            padding: 2px 4px;
+            font-size: 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+        }
+
+        .tier-actions button:hover {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* Hero Cards */
+        .hero-card {
+            width: 65px;
+            height: 85px;
+            background-color: var(--bg-card);
+            border-radius: 5px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: grab;
+            user-select: none;
+            border: 2px solid var(--border-color);
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+            transition: transform 0.15s ease, border-color 0.15s ease;
+            overflow: hidden;
+        }
+
+        .hero-card:active {
+            cursor: grabbing;
+        }
+
+        .hero-card:hover {
+            transform: translateY(-2px);
+            border-color: #ffffff;
+            z-index: 10;
+        }
+
+        .hero-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: top center;
+            pointer-events: none;
+        }
+
+        .hero-fallback {
+            padding: 4px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            pointer-events: none;
+        }
+
+        .hero-name {
+            font-size: 0.65rem;
+            font-weight: 700;
+            line-height: 1.1;
+            color: var(--text-main);
+            word-break: break-word;
+        }
+
+        .hero-alter {
+            font-size: 0.55rem;
+            color: var(--text-muted);
+        }
+
+        .hero-badge {
+            align-self: flex-start;
+            font-size: 0.5rem;
+            padding: 1px 3px;
+            border-radius: 3px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Aspect Theme Colors */
+        .badge-leadership { background: #2b4c7e; color: #9cc2ff; }
+        .badge-aggression { background: #7e2b2b; color: #ff9c9c; }
+        .badge-justice { background: #7e6f2b; color: #ffe89c; }
+        .badge-protection { background: #2b7e41; color: #9cffa8; }
+        .badge-pool { background: #6a2b7e; color: #e99cff; }
+
+        /* Pool Area */
+        .pool-container {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .pool-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .pool-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .instruction-badge {
+            background-color: rgba(255, 215, 0, 0.15);
+            color: var(--accent-gold);
+            border: 1px solid rgba(255, 215, 0, 0.4);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"], select {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 6px 10px;
+            border-radius: 4px;
+            outline: none;
+            font-size: 0.85rem;
+        }
+
+        input[type="text"]:focus, select:focus {
+            border-color: var(--accent-red);
+        }
+
+        .hero-pool {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            min-height: 120px;
+            max-height: 380px;
+            overflow-y: auto;
+            padding: 8px;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 6px;
+        }
+
+        /* Right-Click Custom Context Menu */
+        #context-menu {
+            position: absolute;
+            display: none;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            z-index: 1000;
+            min-width: 180px;
+            overflow: hidden;
+            padding: 4px 0;
+        }
+
+        .context-item {
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.15s ease;
+        }
+
+        .context-item:hover {
+            background-color: var(--accent-red);
+            color: white;
+        }
+
+        .context-divider {
+            height: 1px;
+            background-color: var(--border-color);
+            margin: 4px 0;
+        }
+
+        .context-color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <div class="header-left">
+            <!-- Fixed SVG Banner Graphic with Adjusted ViewBox and Text Offsets -->
+            <svg class="banner-art-svg" viewBox="0 0 355 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- MARVEL Red Box -->
+                <rect x="5" y="5" width="125" height="50" rx="3" fill="#E62429"/>
+                <text x="67.5" y="41" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Impact, Arial" font-weight="900" font-size="34" fill="#FFFFFF" text-anchor="middle" letter-spacing="-1">MARVEL</text>
+                <!-- CHAMPIONS Text -->
+                <text x="142" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Impact, Arial" font-weight="800" font-size="22" fill="#FFFFFF" letter-spacing="0.8">CHAMPIONS</text>
+                <text x="142" y="48" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial" font-weight="700" font-size="10" fill="#9AA1B9" letter-spacing="1.8">THE CARD GAME</text>
+            </svg>
+            <div class="title-group">
+                <h1>TIER LIST MAKER</h1>
+                <p>Hero Pool & Deck-Building Reference Evaluator</p>
+            </div>
+        </div>
+        <div class="controls-group">
+            <button onclick="addTierRow()">+ Add Tier</button>
+            <button onclick="saveListToStorage()">💾 Save Layout</button>
+            <button onclick="loadListFromStorage()">📂 Load Layout</button>
+            <button onclick="resetBoard()">Reset</button>
+        </div>
+    </div>
+
+    <!-- Tier List Board -->
+    <div id="tier-board"></div>
+
+    <!-- Unranked Hero Pool -->
+    <div class="pool-container">
+        <div class="pool-header">
+            <div class="pool-title-group">
+                <h3>Unranked Heroes (<span id="pool-count">0</span>)</h3>
+                <span class="instruction-badge">💡 Drag & drop or right-click hero to select tier</span>
+            </div>
+            <div class="filter-group">
+                <input type="text" id="search-input" placeholder="Search hero..." oninput="filterHeroes()">
+                
+                <!-- Filter 1: Release Wave / Cycle -->
+                <select id="wave-filter" onchange="filterHeroes()">
+                    <option value="ALL">All Waves / Cycles</option>
+                    <option value="Core & Wave 1">Core Set & Wave 1</option>
+                    <option value="Red Skull & Wave 2">Red Skull & Wave 2</option>
+                    <option value="Guardians Cycle">Guardians Cycle & Wave 3</option>
+                    <option value="Mad Titan's Shadow">Mad Titan's Shadow & Wave 4</option>
+                    <option value="Sinister Motives">Sinister Motives Cycle</option>
+                    <option value="Mutant Genesis">Mutant Genesis & X-Men</option>
+                    <option value="NeXt Evolution">NeXt Evolution & X-Force</option>
+                    <option value="Age of Apocalypse">Age of Apocalypse Cycle</option>
+                    <option value="Agents of SHIELD">Agents of S.H.I.E.L.D. Cycle</option>
+                    <option value="Civil War">Civil War Wave</option>
+                    <option value="Fear No Evil">Fear No Evil & Street Level</option>
+                </select>
+
+                <!-- Filter 2: Team / Printed Traits (Alphabetized A-Z) -->
+                <select id="team-filter" onchange="filterHeroes()">
+                    <option value="ALL">All Printed Traits</option>
+                    <option value="Asgardian">Asgardian</option>
+                    <option value="Avenger">Avenger</option>
+                    <option value="Champion">Champion</option>
+                    <option value="Defender">Defender</option>
+                    <option value="Gamma">Gamma</option>
+                    <option value="Guardian">Guardian</option>
+                    <option value="Martial-Artist">Martial Artist</option>
+                    <option value="Mutant">Mutant (X-Men / X-Force)</option>
+                    <option value="Mystic">Mystic</option>
+                    <option value="SHIELD">S.H.I.E.L.D.</option>
+                    <option value="Wakanda">Wakanda</option>
+                    <option value="Web-Warrior">Web-Warrior</option>
+                    <option value="X-Force">X-Force</option>
+                    <option value="X-Men">X-Men</option>
+                </select>
+            </div>
+        </div>
+        <div id="hero-pool" class="hero-pool tier-dropzone" ondrop="handleDrop(event)" ondragover="handleDragOver(event)"></div>
+    </div>
+
+    <!-- Custom Right-Click Context Menu -->
+    <div id="context-menu"></div>
+
+    <script>
+        let tiers = [
+            { id: 'tier-1', label: 'Top-Tier Favorites', color: '#de1bce', heroes: [] },
+            { id: 'tier-2', label: 'Still Great Fun!', color: '#28e256', heroes: [] },
+            { id: 'tier-3', label: 'Solid!', color: '#e4f312', heroes: [] },
+            { id: 'tier-4', label: 'Can Be Fun', color: '#00fffb', heroes: [] },
+            { id: 'tier-5', label: 'Avoid', color: '#ea331f', heroes: [] }
+        ];
+
+        let selectedHeroForContext = null;
+
+        // Master Pool with Strict In-Game Printed Traits (Hero + Alter-Ego)
+        const masterHeroPool = [
+            // Core Set & Wave 1
+            { id: 'spider-man', name: 'Spider-Man', alter: 'Peter Parker', wave: 'Core & Wave 1', team: 'Web-Warrior Avenger', aspect: 'justice', cardCode: '01001a' },
+            { id: 'captain-marvel', name: 'Captain Marvel', alter: 'Carol Danvers', wave: 'Core & Wave 1', team: 'Avenger Soldier', aspect: 'leadership', cardCode: '01010a' },
+            { id: 'she-hulk', name: 'She-Hulk', alter: 'Jennifer Walters', wave: 'Core & Wave 1', team: 'Avenger Gamma Lawyer', aspect: 'aggression', cardCode: '01019a' },
+            { id: 'iron-man', name: 'Iron Man', alter: 'Tony Stark', wave: 'Core & Wave 1', team: 'Avenger Genius', aspect: 'aggression', cardCode: '01029a' },
+            { id: 'black-panther', name: 'Black Panther', alter: 'T\'Challa', wave: 'Core & Wave 1', team: 'Avenger Wakanda King', aspect: 'protection', cardCode: '01040a' },
+            { id: 'captain-america', name: 'Captain America', alter: 'Steve Rogers', wave: 'Core & Wave 1', team: 'Avenger Soldier', aspect: 'leadership', cardCode: '03001a' },
+            { id: 'ms-marvel', name: 'Ms. Marvel', alter: 'Kamala Khan', wave: 'Core & Wave 1', team: 'Champion Inhuman', aspect: 'protection', cardCode: '05001a' },
+            { id: 'thor', name: 'Thor', alter: 'Odinson', wave: 'Core & Wave 1', team: 'Avenger Asgardian', aspect: 'aggression', cardCode: '06001a' },
+            { id: 'black-widow', name: 'Black Widow', alter: 'Natasha Romanoff', wave: 'Core & Wave 1', team: 'Avenger Spy', aspect: 'justice', cardCode: '08001a' },
+            { id: 'doctor-strange', name: 'Doctor Strange', alter: 'Stephen Strange', wave: 'Core & Wave 1', team: 'Avenger Mystic', aspect: 'leadership', cardCode: '09001a' },
+            { id: 'hulk', name: 'Hulk', alter: 'Bruce Banner', wave: 'Core & Wave 1', team: 'Avenger Gamma Genius', aspect: 'aggression', cardCode: '10001a' },
+
+            // Red Skull & Wave 2
+            { id: 'hawkeye', name: 'Hawkeye', alter: 'Clint Barton', wave: 'Red Skull & Wave 2', team: 'Avenger SHIELD', aspect: 'leadership', cardCode: '04001a' },
+            { id: 'spider-woman', name: 'Spider-Woman', alter: 'Jessica Drew', wave: 'Red Skull & Wave 2', team: 'Avenger SHIELD Spy', aspect: 'justice', cardCode: '04031a' },
+            { id: 'ant-man', name: 'Ant-Man', alter: 'Scott Lang', wave: 'Red Skull & Wave 2', team: 'Avenger Giant Small Genius', aspect: 'leadership', cardCode: '12001a' },
+            { id: 'wasp', name: 'Wasp', alter: 'Nadia van Dyne', wave: 'Red Skull & Wave 2', team: 'Avenger Genius Giant Small', aspect: 'aggression', cardCode: '13001a' },
+            { id: 'quicksilver', name: 'Quicksilver', alter: 'Pietro Maximoff', wave: 'Red Skull & Wave 2', team: 'Avenger', aspect: 'protection', cardCode: '14001a' },
+            { id: 'scarlet-witch', name: 'Scarlet Witch', alter: 'Wanda Maximoff', wave: 'Red Skull & Wave 2', team: 'Avenger Mystic', aspect: 'justice', cardCode: '15001a' },
+
+            // Guardians Cycle & Wave 3
+            { id: 'groot', name: 'Groot', alter: 'Groot', wave: 'Guardians Cycle', team: 'Guardian Flora-Colossus', aspect: 'protection', cardCode: '16001a' },
+            { id: 'rocket-raccoon', name: 'Rocket Raccoon', alter: 'Rocket', wave: 'Guardians Cycle', team: 'Guardian Genius', aspect: 'aggression', cardCode: '16029a' },
+            { id: 'star-lord', name: 'Star-Lord', alter: 'Peter Quill', wave: 'Guardians Cycle', team: 'Guardian Outlaw', aspect: 'leadership', cardCode: '17001a' },
+            { id: 'gamora', name: 'Gamora', alter: 'Gamora', wave: 'Guardians Cycle', team: 'Guardian Assassin', aspect: 'aggression', cardCode: '18001a' },
+            { id: 'drax', name: 'Drax', alter: 'Arthur Douglas', wave: 'Guardians Cycle', team: 'Guardian Outlaw', aspect: 'protection', cardCode: '19001a' },
+            { id: 'venom', name: 'Venom', alter: 'Flash Thompson', wave: 'Guardians Cycle', team: 'Guardian Symbiote Soldier', aspect: 'justice', cardCode: '20001a' },
+            { id: 'nebula', name: 'Nebula', alter: 'Nebula', wave: 'Guardians Cycle', team: 'Guardian Cybernetic Outlaw', aspect: 'justice', cardCode: '22001a' },
+
+            // Mad Titan's Shadow & Wave 4
+            { id: 'spectrum', name: 'Spectrum', alter: 'Monica Rambeau', wave: 'Mad Titan\'s Shadow', team: 'Avenger Lead', aspect: 'leadership', cardCode: '21001a' },
+            { id: 'adam-warlock', name: 'Adam Warlock', alter: 'Adam Warlock', wave: 'Mad Titan\'s Shadow', team: 'Guardian Mystic', aspect: 'leadership', cardCode: '21031a' },
+            { id: 'war-machine', name: 'War Machine', alter: 'James Rhodes', wave: 'Mad Titan\'s Shadow', team: 'Avenger Soldier', aspect: 'leadership', cardCode: '23001a' },
+            { id: 'vision', name: 'Vision', alter: 'Vision', wave: 'Mad Titan\'s Shadow', team: 'Avenger Android', aspect: 'protection', cardCode: '26001a' },
+            { id: 'valkyrie', name: 'Valkyrie', alter: 'Brunnhilde', wave: 'Mad Titan\'s Shadow', team: 'Asgardian Avenger', aspect: 'aggression', cardCode: '25001a' },
+
+            // Sinister Motives & Web-Warriors
+            { id: 'ghost-spider', name: 'Ghost-Spider', alter: 'Gwen Stacy', wave: 'Sinister Motives', team: 'Web-Warrior Civilian', aspect: 'protection', cardCode: '27001a' },
+            { id: 'miles-morales', name: 'Miles Morales', alter: 'Miles Morales', wave: 'Sinister Motives', team: 'Web-Warrior Champion', aspect: 'justice', cardCode: '27030a' },
+            { id: 'nova', name: 'Nova', alter: 'Sam Alexander', wave: 'Sinister Motives', team: 'Champion Space', aspect: 'aggression', cardCode: '28001a' },
+            { id: 'ironheart', name: 'Ironheart', alter: 'Riri Williams', wave: 'Sinister Motives', team: 'Champion Genius', aspect: 'leadership', cardCode: '29001a' },
+            { id: 'spider-ham', name: 'Spider-Ham', alter: 'Peter Porker', wave: 'Sinister Motives', team: 'Web-Warrior Cartoon', aspect: 'justice', cardCode: '30001a' },
+            { id: 'spdr', name: 'SP//dr', alter: 'Peni Parker', wave: 'Sinister Motives', team: 'Web-Warrior Pilot Genius', aspect: 'protection', cardCode: '31001a' },
+
+            // Mutant Genesis & X-Men Cycles
+            { id: 'shadowcat', name: 'Shadowcat', alter: 'Kitty Pryde', wave: 'Mutant Genesis', team: 'X-Men Mutant Genius', aspect: 'protection', cardCode: '32030a' },
+            { id: 'colossus', name: 'Colossus', alter: 'Piotr Rasputin', wave: 'Mutant Genesis', team: 'X-Men Mutant', aspect: 'protection', cardCode: '32001a' },
+            { id: 'cyclops', name: 'Cyclops', alter: 'Scott Summers', wave: 'Mutant Genesis', team: 'X-Men Mutant Leader', aspect: 'leadership', cardCode: '33001a' },
+            { id: 'phoenix', name: 'Phoenix', alter: 'Jean Grey', wave: 'Mutant Genesis', team: 'X-Men Mutant Psionic', aspect: 'justice', cardCode: '34001a' },
+            { id: 'wolverine', name: 'Wolverine', alter: 'Logan', wave: 'Mutant Genesis', team: 'X-Men Mutant Weapon-X', aspect: 'aggression', cardCode: '35001a' },
+            { id: 'storm', name: 'Storm', alter: 'Ororo Munroe', wave: 'Mutant Genesis', team: 'X-Men Mutant Leader Weather', aspect: 'leadership', cardCode: '36001a' },
+            { id: 'gambit', name: 'Gambit', alter: 'Remy LeBeau', wave: 'Mutant Genesis', team: 'X-Men Mutant Thief', aspect: 'justice', cardCode: '37001a' },
+            { id: 'rogue', name: 'Rogue', alter: 'Anna Marie', wave: 'Mutant Genesis', team: 'X-Men Mutant', aspect: 'protection', cardCode: '38001a' },
+
+            // NeXt Evolution & X-Force
+            { id: 'cable', name: 'Cable', alter: 'Nathan Summers', wave: 'NeXt Evolution', team: 'X-Force Mutant Soldier Time Traveler', aspect: 'leadership', cardCode: '40001a' },
+            { id: 'domino', name: 'Domino', alter: 'Neena Thurman', wave: 'NeXt Evolution', team: 'X-Force Mutant Mercenary', aspect: 'justice', cardCode: '40037a' },
+            { id: 'psylocke', name: 'Psylocke', alter: 'Betsy Braddock', wave: 'NeXt Evolution', team: 'X-Force Mutant Psionic Telepath', aspect: 'justice', cardCode: '41001a' },
+            { id: 'angel', name: 'Angel', alter: 'Warren Worthington III', wave: 'NeXt Evolution', team: 'X-Force X-Men Mutant Aerial', aspect: 'protection', cardCode: '42001a' },
+            { id: 'x-23', name: 'X-23', alter: 'Laura Kinney', wave: 'NeXt Evolution', team: 'X-Force Mutant Weapon-X', aspect: 'aggression', cardCode: '43001a' },
+            { id: 'deadpool', name: 'Deadpool', alter: 'Wade Wilson', wave: 'NeXt Evolution', team: 'X-Force Mercenary Pool Mutant', aspect: 'pool', cardCode: '44001a' },
+
+            // Age of Apocalypse
+            { id: 'bishop', name: 'Bishop', alter: 'Lucas Bishop', wave: 'Age of Apocalypse', team: 'X-Men Mutant Officer', aspect: 'leadership', cardCode: '45001a' },
+            { id: 'magik', name: 'Magik', alter: 'Illyana Rasputina', wave: 'Age of Apocalypse', team: 'X-Men Mutant Mystic', aspect: 'aggression', cardCode: '45030a' },
+            { id: 'iceman', name: 'Iceman', alter: 'Bobby Drake', wave: 'Age of Apocalypse', team: 'X-Men Mutant', aspect: 'protection', cardCode: '46001a' },
+            { id: 'jubilee', name: 'Jubilee', alter: 'Jubilation Lee', wave: 'Age of Apocalypse', team: 'X-Men Mutant Mall-Rat', aspect: 'justice', cardCode: '47001a' },
+            { id: 'nightcrawler', name: 'Nightcrawler', alter: 'Kurt Wagner', wave: 'Age of Apocalypse', team: 'X-Men Mutant Swashbuckler', aspect: 'protection', cardCode: '48001a' },
+            { id: 'magneto', name: 'Magneto', alter: 'Erik Lehnsherr', wave: 'Age of Apocalypse', team: 'X-Men Mutant Leader', aspect: 'leadership', cardCode: '49001a' },
+
+            // Agents of S.H.I.E.L.D.
+            { id: 'maria-hill', name: 'Maria Hill', alter: 'Maria Hill', wave: 'Agents of SHIELD', team: 'SHIELD Officer Commander', aspect: 'leadership', cardCode: '50001a' },
+            { id: 'nick-fury', name: 'Nick Fury', alter: 'Nick Fury', wave: 'Agents of SHIELD', team: 'SHIELD Spy Director', aspect: 'justice', cardCode: '50034a' },
+            { id: 'black-panther-shuri', name: 'Black Panther (Shuri)', alter: 'Shuri', wave: 'Agents of SHIELD', team: 'Wakanda Genius SHIELD', aspect: 'protection', cardCode: '51001a' },
+            { id: 'silk', name: 'Silk', alter: 'Cindy Moon', wave: 'Agents of SHIELD', team: 'Web-Warrior Reporter', aspect: 'protection', cardCode: '52001a' },
+            { id: 'sam-wilson', name: 'Falcon', alter: 'Sam Wilson', wave: 'Agents of SHIELD', team: 'Avenger SHIELD Aerial', aspect: 'leadership', cardCode: '53001a' },
+            { id: 'winter-soldier', name: 'Winter Soldier', alter: 'Bucky Barnes', wave: 'Agents of SHIELD', team: 'Avenger SHIELD Soldier Spy', aspect: 'aggression', cardCode: '54001a' },
+
+            // Civil War Wave
+            { id: 'tigra', name: 'Tigra', alter: 'Greer Grant Nelson', wave: 'Civil War', team: 'Avenger Cat', aspect: 'aggression', cardCode: '56001a' },
+            { id: 'hulkling', name: 'Hulkling', alter: 'Teddy Altman', wave: 'Civil War', team: 'Champion Kree Skrull', aspect: 'protection', cardCode: '56029a' },
+            { id: 'wonder-man', name: 'Wonder Man', alter: 'Simon Williams', wave: 'Civil War', team: 'Avenger Actor', aspect: 'aggression', cardCode: '58001a' },
+            { id: 'hercules', name: 'Hercules', alter: 'Hercules', wave: 'Civil War', team: 'Avenger Olympus God', aspect: 'aggression', cardCode: '59001a' },         
+           
+            // Fear No Evil & Street Level
+            { id: 'daredevil', name: 'Daredevil', alter: 'Matt Murdock', wave: 'Fear No Evil', team: 'Defender Martial-Artist Lawyer', aspect: 'justice', cardCode: '60001a' },
+            { id: 'echo', name: 'Echo', alter: 'Maya Lopez', wave: 'Fear No Evil', team: 'Defender Martial-Artist', aspect: 'protection', cardCode: '60037a' },
+            { id: 'jessica-jones', name: 'Jessica Jones', alter: 'Jessica Jones', wave: 'Fear No Evil', team: 'Defender Private-Eye', aspect: 'justice', cardCode: '61001a' },
+            { id: 'luke-cage', name: 'Luke Cage', alter: 'Luke Cage', wave: 'Fear No Evil', team: 'Defender Martial-Artist Hero-For-Hire', aspect: 'protection', cardCode: '62001a' }
+        ];
+
+        let unrankedPool = [...masterHeroPool];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTierBoard();
+            renderHeroPool();
+
+            // Hide right-click context menu when clicking anywhere else
+            document.addEventListener('click', () => {
+                const menu = document.getElementById('context-menu');
+                menu.style.display = 'none';
+            });
+        });
+
+        function renderTierBoard() {
+            const board = document.getElementById('tier-board');
+            board.innerHTML = '';
+
+            tiers.forEach((tier) => {
+                const row = document.createElement('div');
+                row.className = 'tier-row';
+                row.id = tier.id;
+
+                row.innerHTML = `
+                    <div class="tier-header" style="background-color: ${tier.color};">
+                        <div class="tier-header-text" onclick="editTierLabel('${tier.id}')" title="Click to edit text">
+                            ${tier.label}
+                        </div>
+                        <div class="color-picker-btn" title="Click to change color">
+                            🎨
+                            <input type="color" class="tier-color-input" value="${tier.color}" onchange="changeTierColor('${tier.id}', this.value)">
+                        </div>
+                    </div>
+                    <div class="tier-dropzone" data-tier-id="${tier.id}" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
+                        ${tier.heroes.map(hero => createHeroCardHTML(hero)).join('')}
+                    </div>
+                    <div class="tier-actions">
+                        <button onclick="moveTier('${tier.id}', -1)">▲</button>
+                        <button onclick="deleteTier('${tier.id}')">✕</button>
+                        <button onclick="moveTier('${tier.id}', 1)">▼</button>
+                    </div>
+                `;
+                board.appendChild(row);
+            });
+        }
+
+        function renderHeroPool() {
+            const poolContainer = document.getElementById('hero-pool');
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+            const waveVal = document.getElementById('wave-filter').value;
+            const teamVal = document.getElementById('team-filter').value;
+
+            const filtered = unrankedPool.filter(hero => {
+                const matchesSearch = hero.name.toLowerCase().includes(searchVal) || hero.alter.toLowerCase().includes(searchVal);
+                const matchesWave = waveVal === 'ALL' || hero.wave === waveVal;
+                const matchesTeam = teamVal === 'ALL' || hero.team.includes(teamVal);
+                return matchesSearch && matchesWave && matchesTeam;
+            });
+
+            document.getElementById('pool-count').textContent = unrankedPool.length;
+            poolContainer.innerHTML = filtered.map(hero => createHeroCardHTML(hero)).join('');
+        }
+
+        function createHeroCardHTML(hero) {
+            if (hero.cardCode && hero.cardCode.trim() !== '') {
+                const imgUrl = `https://marvelcdb.com/bundles/cards/${hero.cardCode}.png`;
+                return `
+                    <div class="hero-card" 
+                         draggable="true" 
+                         id="card-${hero.id}" 
+                         data-hero-id="${hero.id}" 
+                         ondragstart="handleDragStart(event)"
+                         onclick="quickMoveHero('${hero.id}')"
+                         oncontextmenu="showContextMenu(event, '${hero.id}')"
+                         title="${hero.name} (${hero.alter}) - Right click to select tier">
+                        <img src="${imgUrl}" alt="${hero.name}" class="hero-img" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                        <div class="hero-fallback" style="display:none;">
+                            <div>
+                                <div class="hero-name">${hero.name}</div>
+                                <div class="hero-alter">${hero.alter}</div>
+                            </div>
+                            <div class="hero-badge badge-${hero.aspect}">${hero.team}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="hero-card" 
+                     draggable="true" 
+                     id="card-${hero.id}" 
+                     data-hero-id="${hero.id}" 
+                     ondragstart="handleDragStart(event)"
+                     onclick="quickMoveHero('${hero.id}')"
+                     oncontextmenu="showContextMenu(event, '${hero.id}')">
+                    <div class="hero-fallback">
+                        <div>
+                            <div class="hero-name">${hero.name}</div>
+                            <div class="hero-alter">${hero.alter}</div>
+                        </div>
+                        <div class="hero-badge badge-${hero.aspect}">${hero.team}</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /* Context Menu Handling */
+        function showContextMenu(e, heroId) {
+            e.preventDefault();
+            selectedHeroForContext = heroId;
+
+            const menu = document.getElementById('context-menu');
+            let menuHTML = '';
+
+            tiers.forEach(tier => {
+                menuHTML += `
+                    <div class="context-item" onclick="moveHeroToDestination('${heroId}', '${tier.id}')">
+                        <span class="context-color-dot" style="background-color: ${tier.color};"></span>
+                        Move to ${tier.label}
+                    </div>
+                `;
+            });
+
+            menuHTML += `<div class="context-divider"></div>`;
+            menuHTML += `
+                <div class="context-item" onclick="moveHeroToDestination('${heroId}', null)">
+                    ↩️ Return to Unranked Pool
+                </div>
+            `;
+
+            menu.innerHTML = menuHTML;
+            menu.style.left = `${e.pageX}px`;
+            menu.style.top = `${e.pageY}px`;
+            menu.style.display = 'block';
+        }
+
+        function handleDragStart(e) {
+            const cardElement = e.target.closest('.hero-card');
+            if (cardElement) {
+                e.dataTransfer.setData('text/plain', cardElement.dataset.heroId);
+                e.dataTransfer.effectAllowed = 'move';
+            }
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            const heroId = e.dataTransfer.getData('text/plain');
+            const dropzone = e.target.closest('.tier-dropzone');
+            
+            if (!dropzone) return;
+
+            const targetTierId = dropzone.dataset.tierId || null;
+            moveHeroToDestination(heroId, targetTierId);
+        }
+
+        function moveHeroToDestination(heroId, targetTierId) {
+            let foundHero = masterHeroPool.find(h => h.id === heroId);
+            if (!foundHero) return;
+
+            unrankedPool = unrankedPool.filter(h => h.id !== heroId);
+            tiers.forEach(t => {
+                t.heroes = t.heroes.filter(h => h.id !== heroId);
+            });
+
+            if (targetTierId) {
+                const targetTier = tiers.find(t => t.id === targetTierId);
+                if (targetTier) targetTier.heroes.push(foundHero);
+            } else {
+                unrankedPool.push(foundHero);
+            }
+
+            renderTierBoard();
+            renderHeroPool();
+        }
+
+        function quickMoveHero(heroId) {
+            const isInPool = unrankedPool.some(h => h.id === heroId);
+            if (isInPool && tiers.length > 0) {
+                moveHeroToDestination(heroId, tiers[0].id);
+            } else {
+                moveHeroToDestination(heroId, null);
+            }
+        }
+
+        function addTierRow() {
+            const newId = 'tier-' + Date.now();
+            const colors = ['#de1bce', '#28e256', '#e4f312', '#00fffb', '#ea331f'];
+            const randomColor = colors[tiers.length % colors.length];
+            
+            tiers.push({
+                id: newId,
+                label: 'NEW TIER',
+                color: randomColor,
+                heroes: []
+            });
+            renderTierBoard();
+        }
+
+        function deleteTier(tierId) {
+            const tier = tiers.find(t => t.id === tierId);
+            if (tier && tier.heroes.length > 0) {
+                unrankedPool.push(...tier.heroes);
+            }
+            tiers = tiers.filter(t => t.id !== tierId);
+            renderTierBoard();
+            renderHeroPool();
+        }
+
+        function moveTier(tierId, direction) {
+            const index = tiers.findIndex(t => t.id === tierId);
+            if (index < 0) return;
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= tiers.length) return;
+
+            const temp = tiers[index];
+            tiers[index] = tiers[newIndex];
+            tiers[newIndex] = temp;
+            renderTierBoard();
+        }
+
+        function editTierLabel(tierId) {
+            const tier = tiers.find(t => t.id === tierId);
+            if (!tier) return;
+            const newLabel = prompt('Enter Tier Label:', tier.label);
+            if (newLabel !== null && newLabel.trim() !== '') {
+                tier.label = newLabel.trim();
+                renderTierBoard();
+            }
+        }
+
+        function changeTierColor(tierId, newColor) {
+            const tier = tiers.find(t => t.id === tierId);
+            if (tier) {
+                tier.color = newColor;
+                renderTierBoard();
+            }
+        }
+
+        function filterHeroes() {
+            renderHeroPool();
+        }
+
+        function resetBoard() {
+            if (confirm('Reset all heroes to unranked?')) {
+                unrankedPool = [...masterHeroPool];
+                tiers.forEach(t => t.heroes = []);
+                renderTierBoard();
+                renderHeroPool();
+            }
+        }
+
+        // True "Save As" file export (.json)
+        function saveListToStorage() {
+            const saveData = {
+                tiers: tiers,
+                unrankedPool: unrankedPool
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(saveData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "marvel_tier_list_save.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        // True File Picker upload (.json)
+        function loadListFromStorage() {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
+            fileInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (data.tiers && data.unrankedPool) {
+                            tiers = data.tiers;
+                            unrankedPool = data.unrankedPool;
+                            renderTierBoard();
+                            renderHeroPool();
+                            alert('Tier list loaded successfully!');
+                        } else {
+                            alert('Invalid save file format.');
+                        }
+                    } catch (err) {
+                        alert('Error reading save file.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            fileInput.click();
+        }
+    </script>
+</body>
+</html>
