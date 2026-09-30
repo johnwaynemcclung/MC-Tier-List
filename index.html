@@ -397,7 +397,37 @@
             display: inline-block;
             border: 1px solid rgba(255,255,255,0.4);
         }
-    </style>
+
+        /* Remove height limits and scrollbars from hero pool and tiers */
+        #heroPool, 
+        #pool-container, 
+        .pool-container, 
+        .hero-pool, 
+        .tier-content, 
+        .tier-row {
+          height: auto !important;
+          max-height: none !important;
+          overflow: visible !important;
+        }
+
+        /* Hero Card Hover Enlargement (200% with 0.4s Delay) */
+        .card-container, 
+        .hero-card, 
+        .card-item {
+          transition: transform 0.15s ease-in-out, z-index 0.15s ease-in-out;
+          transition-delay: 0s;
+          transform-origin: center center;
+        }
+
+        .card-container:hover, 
+        .hero-card:hover, 
+        .card-item:hover {
+          transform: scale(2.0);
+          transition-delay: 0.4s;
+          z-index: 9999 !important;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.8);
+        }    
+</style>
 </head>
 <body>
 
@@ -532,7 +562,7 @@
 
             // Sinister Motives & Web-Warriors
             { id: 'ghost-spider', name: 'Ghost-Spider', alter: 'Gwen Stacy', wave: 'Sinister Motives', team: 'Web-Warrior Civilian', aspect: 'protection', cardCode: '27001a' },
-            { id: 'miles-morales', name: 'Miles Morales', alter: 'Miles Morales', wave: 'Sinister Motives', team: 'Web-Warrior Champion', aspect: 'justice', cardCode: '27030a' },
+            { id: 'miles-morales', name: 'Spider-Man', alter: 'Miles Morales', wave: 'Sinister Motives', team: 'Web-Warrior Champion', aspect: 'justice', cardCode: '27030a' },
             { id: 'nova', name: 'Nova', alter: 'Sam Alexander', wave: 'Sinister Motives', team: 'Champion Space', aspect: 'aggression', cardCode: '28001a' },
             { id: 'ironheart', name: 'Ironheart', alter: 'Riri Williams', wave: 'Sinister Motives', team: 'Champion Genius', aspect: 'leadership', cardCode: '29001a' },
             { id: 'spider-ham', name: 'Spider-Ham', alter: 'Peter Porker', wave: 'Sinister Motives', team: 'Web-Warrior Cartoon', aspect: 'justice', cardCode: '30001a' },
@@ -577,7 +607,7 @@
             { id: 'hulkling', name: 'Hulkling', alter: 'Teddy Altman', wave: 'Civil War', team: 'Champion Kree Skrull', aspect: 'protection', cardCode: '56029a' },
             { id: 'wonder-man', name: 'Wonder Man', alter: 'Simon Williams', wave: 'Civil War', team: 'Avenger Actor', aspect: 'aggression', cardCode: '58001a' },
             { id: 'hercules', name: 'Hercules', alter: 'Hercules', wave: 'Civil War', team: 'Avenger Olympus God', aspect: 'aggression', cardCode: '59001a' },         
-           
+            
             // Fear No Evil & Street Level
             { id: 'daredevil', name: 'Daredevil', alter: 'Matt Murdock', wave: 'Fear No Evil', team: 'Defender Martial-Artist Lawyer', aspect: 'justice', cardCode: '60001a' },
             { id: 'echo', name: 'Echo', alter: 'Maya Lopez', wave: 'Fear No Evil', team: 'Defender Martial-Artist', aspect: 'protection', cardCode: '60037a' },
