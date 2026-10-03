@@ -773,6 +773,7 @@
             e.dataTransfer.dropEffect = 'move';
         }
 
+        /* Positional Drop Handling (Reordering cards within & across tiers) */
         function handleDrop(e) {
             e.preventDefault();
             const heroId = e.dataTransfer.getData('text/plain');
@@ -781,13 +782,28 @@
             if (!dropzone) return;
 
             const targetTierId = dropzone.dataset.tierId || null;
-            moveHeroToDestination(heroId, targetTierId);
+            
+            // Determine exact insertion index based on mouse position relative to existing cards
+            let targetIndex = null;
+            const existingCards = Array.from(dropzone.querySelectorAll('.hero-card:not(#card-' + heroId + ')'));
+            
+            for (let i = 0; i < existingCards.length; i++) {
+                const box = existingCards[i].getBoundingClientRect();
+                const cardMidpointX = box.left + box.width / 2;
+                if (e.clientX < cardMidpointX) {
+                    targetIndex = i;
+                    break;
+                }
+            }
+
+            moveHeroToDestination(heroId, targetTierId, targetIndex);
         }
 
-        function moveHeroToDestination(heroId, targetTierId) {
+        function moveHeroToDestination(heroId, targetTierId, targetIndex = null) {
             let foundHero = masterHeroPool.find(h => h.id === heroId);
             if (!foundHero) return;
 
+            // Remove hero from wherever they currently live
             unrankedPool = unrankedPool.filter(h => h.id !== heroId);
             tiers.forEach(t => {
                 t.heroes = t.heroes.filter(h => h.id !== heroId);
@@ -795,9 +811,19 @@
 
             if (targetTierId) {
                 const targetTier = tiers.find(t => t.id === targetTierId);
-                if (targetTier) targetTier.heroes.push(foundHero);
+                if (targetTier) {
+                    if (targetIndex !== null && targetIndex >= 0 && targetIndex <= targetTier.heroes.length) {
+                        targetTier.heroes.splice(targetIndex, 0, foundHero);
+                    } else {
+                        targetTier.heroes.push(foundHero);
+                    }
+                }
             } else {
-                unrankedPool.push(foundHero);
+                if (targetIndex !== null && targetIndex >= 0 && targetIndex <= unrankedPool.length) {
+                    unrankedPool.splice(targetIndex, 0, foundHero);
+                } else {
+                    unrankedPool.push(foundHero);
+                }
             }
 
             renderTierBoard();
